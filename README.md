@@ -1,6 +1,8 @@
 # go-data-bridge-client
 Go client for accessing Data Bridge
 
+https://data-bridge-docs.flipsidecrypto.com/#section/Introduction
+
 ## Usage
 
 ### Initialization

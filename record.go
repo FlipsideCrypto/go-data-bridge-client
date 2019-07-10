@@ -7,13 +7,10 @@ import (
 	"net/http"
 )
 
+// Record represents a Data Bridge data record
 type Record struct {
-	ID         string `json:"id"`
-	ConsumerID string `json:"consumer_id"`
-	TopicSlug  string `json:"topic_slug"`
-	RetryCount int32  `json:"retry_count"`
-	Partition  int32  `json:"partition"`
-	Offset     int32  `json:"offset"`
+	ID   string            `json:"id"`
+	Data map[string]string `json:"data"`
 }
 
 func getNextRecord(c Client) (*Record, error) {
