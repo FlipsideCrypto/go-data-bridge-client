@@ -9,8 +9,8 @@ import (
 
 // Record represents a Data Bridge data record
 type Record struct {
-	ID   string            `json:"id"`
-	Data map[string]string `json:"data"`
+	ID   string              `json:"id"`
+	Data []map[string]string `json:"data"`
 }
 
 func getNextRecord(c Client) (*Record, error) {
