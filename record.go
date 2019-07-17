@@ -25,6 +25,10 @@ func getNextRecord(c Client) (*Record, error) {
 		return nil, err
 	}
 
+	if res.StatusCode == 404 {
+		return nil, nil
+	}
+
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
