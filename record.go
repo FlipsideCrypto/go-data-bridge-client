@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 // Record represents a Data Bridge data record
@@ -22,7 +24,7 @@ func getNextRecord(c Client) (*Record, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, fmt.Sprintf("error making databridge http request for %s", url))
 	}
 
 	if res.StatusCode == 404 {
@@ -32,13 +34,13 @@ func getNextRecord(c Client) (*Record, error) {
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error trying to read databridge response body")
 	}
 
 	var record Record
 	err = json.Unmarshal([]byte(body), &record)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error trying to unmarshal response body to json")
 	}
 
 	return &record, nil
@@ -53,7 +55,7 @@ func (r Record) updateRecordState(c Client, state string) error {
 
 	_, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("error attempting to update databridge record state for %s", url))
 	}
 
 	// todo - probably get more granular on checking this response
