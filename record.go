@@ -15,9 +15,8 @@ type Record struct {
 	Data []map[string]interface{} `json:"data"`
 }
 
-func getNextRecord(c Client) (*Record, error) {
-	url := fmt.Sprintf("%s/topics/%s/records/next?consumer_id=%s&api_key=%s", c.BaseURL, c.TopicSlug, c.ConsumerID, c.APIKey)
-
+func getUnreadCount(c Client) (*int32, error) {
+	url := fmt.Sprintf("%s/topics/%s?api_key=%s", c.BaseURL, c.TopicSlug, c.APIKey)
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("api_key", c.APIKey)
@@ -27,8 +26,48 @@ func getNextRecord(c Client) (*Record, error) {
 		return nil, errors.Wrap(err, fmt.Sprintf("error making databridge http request for %s", url))
 	}
 
-	if res.StatusCode == 404 {
+	if res.StatusCode != 200 {
+		return nil, errors.Wrap(err, fmt.Sprintf("databridge - error getting unread count for %s", url))
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error trying to read databridge response body")
+	}
+
+	var js struct {
+		Count int32 `json:"unread_count"`
+	}
+
+	err = json.Unmarshal([]byte(body), &js)
+	if err != nil {
+		return nil, errors.Wrap(err, "error trying to unmarshal response body to json")
+	}
+
+	return &js.Count, nil
+}
+
+func getNextRecord(c Client) (*Record, error) {
+	count, err := getUnreadCount(c)
+	if err != nil {
+		return nil, err
+	} else if *count == 0 {
 		return nil, nil
+	}
+
+	url := fmt.Sprintf("%s/topics/%s/records/next?consumer_id=%s&api_key=%s", c.BaseURL, c.TopicSlug, c.ConsumerID, c.APIKey)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("api_key", c.APIKey)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("error making databridge http request for %s", url))
+	}
+
+	if res.StatusCode != 200 {
+		return nil, errors.New(fmt.Sprintf("databridge responded with non-200 for %s", url))
 	}
 
 	defer res.Body.Close()
@@ -53,12 +92,14 @@ func (r Record) updateRecordState(c Client, state string) error {
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("api_key", c.APIKey)
 
-	_, err := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("error attempting to update databridge record state for %s", url))
 	}
 
-	// todo - probably get more granular on checking this response
+	if res.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("databridge update record state responded with non-200 for %s", url))
+	}
 
 	return nil
 }
