@@ -18,62 +18,62 @@ type Consumer struct {
 }
 
 // GetRegisteredConsumers get a list of consumers that have registered with the data bridge under this api key
-func (c Client) GetRegisteredConsumers() (*[]Consumer, error) {
+func (c Client) GetRegisteredConsumers() ([]Consumer, error) {
+	consumers := make([]Consumer, 0)
+
 	url := fmt.Sprintf("%s/consumers?api_key=%s", c.BaseURL, c.APIKey)
 	req, _ := http.NewRequest("GET", url, nil)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return consumers, err
 	}
 
 	if res.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("databridge responded with non-200 for %s", url))
+		return consumers, errors.New(fmt.Sprintf("databridge responded with non-200 for %s", url))
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return consumers, err
 	}
-
-	var consumers []Consumer
 
 	err = json.Unmarshal([]byte(body), &consumers)
 	if err != nil {
-		return nil, err
+		return consumers, err
 	}
 
-	return &consumers, nil
+	return consumers, nil
 }
 
 // GetAvailableConsumers returns the consumers associated with this api key that are not assigned to a record.
-func (c Client) GetAvailableConsumers() (*[]Consumer, error) {
+func (c Client) GetAvailableConsumers() ([]Consumer, error) {
+	consumers := make([]Consumer, 0)
+
 	url := fmt.Sprintf("%s/consumers/available?api_key=%s", c.BaseURL, c.APIKey)
 	req, _ := http.NewRequest("GET", url, nil)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return consumers, err
 	}
 
 	if res.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("databridge responded with non-200 for %s", url))
+		return consumers, errors.New(fmt.Sprintf("databridge responded with non-200 for %s", url))
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return consumers, err
 	}
-
-	var consumers []Consumer
 
 	err = json.Unmarshal([]byte(body), &consumers)
 	if err != nil {
-		return nil, err
+		return consumers, err
 	}
 
-	return &consumers, nil
+	return consumers, nil
 }
 
 // RegisterConsumer registers a consumer with the Data Bridge to use when consuming topic-level records.
