@@ -15,7 +15,9 @@ type Record struct {
 	Data []map[string]interface{} `json:"data"`
 }
 
-func getUnreadCount(c Client) (*int32, error) {
+// GetUnreadCount returns the count of unread records in the given topic in the context of the api key
+func (c Client) GetUnreadCount() (*int32, error) {
+
 	url := fmt.Sprintf("%s/topics/%s?api_key=%s", c.BaseURL, c.TopicSlug, c.APIKey)
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("content-type", "application/json")
@@ -37,7 +39,7 @@ func getUnreadCount(c Client) (*int32, error) {
 	}
 
 	var js struct {
-		Count int32 `json:"unread_count"`
+		Count int32 `json:"unread_records"`
 	}
 
 	err = json.Unmarshal([]byte(body), &js)
@@ -48,8 +50,9 @@ func getUnreadCount(c Client) (*int32, error) {
 	return &js.Count, nil
 }
 
-func getNextRecord(c Client) (*Record, error) {
-	count, err := getUnreadCount(c)
+// GetNextRecord returns the topic's next record.  Will return nil without an error when there are no more records.
+func (c Client) GetNextRecord() (*json.RawMessage, error) {
+	count, err := c.GetUnreadCount()
 	if err != nil {
 		return nil, err
 	} else if *count == 0 {
@@ -76,13 +79,24 @@ func getNextRecord(c Client) (*Record, error) {
 		return nil, errors.Wrap(err, "error trying to read databridge response body")
 	}
 
-	var record Record
-	err = json.Unmarshal([]byte(body), &record)
+	var result json.RawMessage
+
+	err = json.Unmarshal([]byte(body), &result)
 	if err != nil {
 		return nil, errors.Wrap(err, "error trying to unmarshal response body to json")
 	}
 
-	return &record, nil
+	return &result, nil
+}
+
+// CompleteRecord allows the record to be marked as completed
+func (c Client) CompleteRecord(r Record) error {
+	return r.updateRecordState(c, "completed")
+}
+
+// FailRecord allows the record to be marked as failed
+func (c Client) FailRecord(r Record) error {
+	return r.updateRecordState(c, "failed")
 }
 
 func (r Record) updateRecordState(c Client, state string) error {

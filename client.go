@@ -25,18 +25,3 @@ func NewClient(config Config) (Client, error) {
 
 	return c, nil
 }
-
-// GetNextRecord returns the topic's next record.  Will return nil without an error when there are no more records.
-func (c Client) GetNextRecord() (*Record, error) {
-	return getNextRecord(c)
-}
-
-// CompleteRecord allows the record to be marked as completed
-func (c Client) CompleteRecord(r Record) error {
-	return r.updateRecordState(c, "completed")
-}
-
-// FailRecord allows the record to be marked as failed
-func (c Client) FailRecord(r Record) error {
-	return r.updateRecordState(c, "failed")
-}
