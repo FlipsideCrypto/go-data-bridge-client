@@ -7,13 +7,28 @@ https://data-bridge-docs.flipsidecrypto.com/#section/Introduction
 
 ### Initialization
 ```
-config := Config{APIKey: "api-key", TopicSlug: "my-topic-slug", ConsumerID: "consumer-id"}
+config := Config{APIKey: "api-key", TopicSlug: "my-topic-slug"}
 client, err := NewClient(config)
+```
+
+### Get Registered Consumers 
+```
+consumers, err := client.GetRegisteredConsumers()
+```
+
+### Get Available Consumers 
+```
+consumers, err := client.GetAvailableConsumers()
+```
+
+### Register Consumer
+```
+consumer, err := client.RegisterConsumer()
 ```
 
 ### Get Next Record
 ```
-record, err := client.GetNextRecord()
+record, err := client.GetNextRecord(consumerID)
 ```
 
 ### Mark Record Completed
