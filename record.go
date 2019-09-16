@@ -11,8 +11,8 @@ import (
 
 // Record represents a Data Bridge data record
 type Record struct {
-	ID   string                   `json:"id"`
-	Data []map[string]interface{} `json:"data"`
+	ID   string      `json:"id"`
+	Data interface{} `json:"data"`
 }
 
 // GetUnreadCount returns the count of unread records in the given topic in the context of the api key
@@ -51,7 +51,7 @@ func (c Client) GetUnreadCount() (*int32, error) {
 }
 
 // GetNextRecord returns the topic's next record.  Will return nil without an error when there are no more records.
-func (c Client) GetNextRecord(consumerID string) (*json.RawMessage, error) {
+func (c Client) GetNextRecord(consumerID string) (*Record, error) {
 	count, err := c.GetUnreadCount()
 	if err != nil {
 		return nil, err
@@ -79,14 +79,14 @@ func (c Client) GetNextRecord(consumerID string) (*json.RawMessage, error) {
 		return nil, errors.Wrap(err, "error trying to read databridge response body")
 	}
 
-	var result json.RawMessage
+	var record Record
 
-	err = json.Unmarshal([]byte(body), &result)
+	err = json.Unmarshal([]byte(body), &record)
 	if err != nil {
 		return nil, errors.Wrap(err, "error trying to unmarshal response body to json")
 	}
 
-	return &result, nil
+	return &record, nil
 }
 
 // CompleteRecord allows the record to be marked as completed

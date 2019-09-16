@@ -22,15 +22,14 @@ func TestClient_GetUnreadCount(t *testing.T) {
 
 func TestClient_GetNextRecord(t *testing.T) {
 	client := getClient(t)
-	r, err := client.GetNextRecord("b053b974-608e-4f1b-9969-871a02cfbf92")
+	record, err := client.GetNextRecord("b053b974-608e-4f1b-9969-871a02cfbf92")
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
-	if r == nil {
-		t.Fatal("Result is nil")
+	if record == nil {
+		t.Fatal("record is nil")
 	}
 
-	record := string(*r)
 	fmt.Fprintln(os.Stdout, "GetNextRecord")
 	fmt.Fprintln(os.Stdout, record)
 }
