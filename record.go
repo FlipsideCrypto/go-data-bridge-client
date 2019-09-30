@@ -95,12 +95,13 @@ func (c Client) GetNextRecord(consumerID string) (*Record, error) {
 	return &record, nil
 }
 
-// PublishRecord allows for the publishing of a record on the client's topic
-func (c Client) PublishRecord(d Data) error {
+// Publish allows for the publishing of a record on the client's topic
+func (c Client) Publish(d interface{}) error {
 	url := fmt.Sprintf("%s/topics/%s/records?api_key=%s", c.BaseURL, c.TopicSlug, c.APIKey)
 
 	// marshal body to byte array
-	body, err := json.Marshal(d)
+	data := Data{Data: d}
+	body, err := json.Marshal(data)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("error marshaling json for data %v", d))
 	}
