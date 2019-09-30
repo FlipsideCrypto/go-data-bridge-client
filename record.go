@@ -1,6 +1,7 @@
 package databridge
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,7 +12,12 @@ import (
 
 // Record represents a Data Bridge data record
 type Record struct {
-	ID   string      `json:"id"`
+	ID string `json:"id"`
+	Data
+}
+
+// Data represents the data portion of a record, can be used on its own when publishing
+type Data struct {
 	Data interface{} `json:"data"`
 }
 
@@ -87,6 +93,33 @@ func (c Client) GetNextRecord(consumerID string) (*Record, error) {
 	}
 
 	return &record, nil
+}
+
+// PublishRecord allows for the publishing of a record on the client's topic
+func (c Client) PublishRecord(d Data) error {
+	url := fmt.Sprintf("%s/topics/%s/records?api_key=%s", c.BaseURL, c.TopicSlug, c.APIKey)
+
+	// marshal body to byte array
+	body, err := json.Marshal(d)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("error marshaling json for data %v", d))
+	}
+
+	// make request
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("api_key", c.APIKey)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("error attempting to publish a record for %s", url))
+	}
+
+	if res.StatusCode != 201 {
+		return errors.New(fmt.Sprintf("databridge publish record responded with non-201 for %s", url))
+	}
+
+	return nil
 }
 
 // CompleteRecord allows the record to be marked as completed

@@ -41,5 +41,8 @@ err := client.CompleteRecord(record)
 err := client.FailRecord(record)
 ```
 
-
+### Publish New Record 
+```
+err := client.PublishRecord(data)
+```
 
