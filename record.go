@@ -68,6 +68,11 @@ func (c Client) GetNextRecord(consumerID string) (*Record, error) {
 		return nil, errors.Wrap(err, fmt.Sprintf("error making databridge http request for %s", url))
 	}
 
+	// capture 404 and return nils
+	if res.StatusCode == 404 {
+		return nil, nil
+	}
+
 	if res.StatusCode != 200 {
 		return nil, errors.New(fmt.Sprintf("databridge responded with non-200 for %s", url))
 	}
