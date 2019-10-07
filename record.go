@@ -12,8 +12,8 @@ import (
 
 // Record represents a Data Bridge data record
 type Record struct {
-	ID string `json:"id"`
-	Data
+	ID   string      `json:"id"`
+	Data interface{} `json:"data"`
 }
 
 // Data represents the data portion of a record, can be used on its own when publishing
