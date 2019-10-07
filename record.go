@@ -58,13 +58,6 @@ func (c Client) GetUnreadCount() (*int32, error) {
 
 // GetNextRecord returns the topic's next record.  Will return nil without an error when there are no more records.
 func (c Client) GetNextRecord(consumerID string) (*Record, error) {
-	count, err := c.GetUnreadCount()
-	if err != nil {
-		return nil, err
-	} else if *count == 0 {
-		return nil, nil
-	}
-
 	url := fmt.Sprintf("%s/topics/%s/records/next?consumer_id=%s&api_key=%s", c.BaseURL, c.TopicSlug, consumerID, c.APIKey)
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("content-type", "application/json")
