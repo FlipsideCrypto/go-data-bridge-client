@@ -4,6 +4,7 @@ package databridge
 type Config struct {
 	APIKey    string
 	TopicSlug string
+	BaseURL   string
 }
 
 // Client allows access to the Databridge API
@@ -17,7 +18,11 @@ type Client struct {
 func NewClient(config Config) (Client, error) {
 	c := Client{}
 	c.APIKey = config.APIKey
-	c.BaseURL = "https://data-bridge.flipsidecrypto.com/api/v1"
+	if config.BaseURL != "" {
+		c.BaseURL = config.BaseURL
+	} else {
+		c.BaseURL = "https://data-bridge.flipsidecrypto.com/api/v1"
+	}
 	c.TopicSlug = config.TopicSlug
 
 	return c, nil
